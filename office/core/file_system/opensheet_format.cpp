@@ -9,9 +9,12 @@
 #include <QJsonArray>
 #include <QBuffer>
 
-// We use Qt's built-in ZIP via QZipWriter/QZipReader (available in Qt6)
-#include <QtCore/private/qzipreader_p.h>
-#include <QtCore/private/qzipwriter_p.h>
+// QZipWriter/QZipReader are Qt private API — available when Qt6CorePrivate is linked.
+// If not available, we fall back to saving as plain JSON (not zipped).
+#ifdef OPENSHEET_HAS_QT_CORE_PRIVATE
+#  include <QtCore/private/qzipreader_p.h>
+#  include <QtCore/private/qzipwriter_p.h>
+#endif
 
 namespace OpenSheet {
 
@@ -23,6 +26,7 @@ bool OpenSheetFormat::write(Workbook *wb, const QString &path, QString &outError
         return false;
     }
 
+#ifdef OPENSHEET_HAS_QT_CORE_PRIVATE
     QZipWriter zip(&file);
     zip.setCompressionPolicy(QZipWriter::AutoCompress);
 
@@ -37,6 +41,18 @@ bool OpenSheetFormat::write(Workbook *wb, const QString &path, QString &outError
 
     zip.close();
     return zip.status() == QZipWriter::NoError;
+#else
+    // Fallback: write as a single JSON file (no zip)
+    QJsonObject root;
+    root["manifest"] = QJsonDocument::fromJson(serializeManifest(wb)).object();
+    QJsonArray sheets;
+    for (int i = 0; i < wb->sheetCount(); ++i)
+        sheets.append(QJsonDocument::fromJson(serializeSheet(wb->sheet(i), i)).object());
+    root["sheets"] = sheets;
+    QByteArray data = QJsonDocument(root).toJson(QJsonDocument::Compact);
+    file.write(data);
+    return true;
+#endif
 }
 
 Workbook *OpenSheetFormat::read(const QString &path, QString &outError)
@@ -47,6 +63,7 @@ Workbook *OpenSheetFormat::read(const QString &path, QString &outError)
         return nullptr;
     }
 
+#ifdef OPENSHEET_HAS_QT_CORE_PRIVATE
     QZipReader zip(&file);
     if (!zip.isReadable()) { outError = "Not a valid .opensheet file"; return nullptr; }
 
@@ -71,6 +88,30 @@ Workbook *OpenSheetFormat::read(const QString &path, QString &outError)
         ++i;
     }
     return wb;
+#else
+    // Fallback: read from single JSON file
+    QByteArray raw = file.readAll();
+    QJsonParseError err;
+    QJsonDocument doc = QJsonDocument::fromJson(raw, &err);
+    if (err.error != QJsonParseError::NoError) {
+        outError = "JSON parse error: " + err.errorString();
+        return nullptr;
+    }
+    QJsonObject root = doc.object();
+    auto *wb = new Workbook();
+    if (!deserializeManifest(QJsonDocument(root["manifest"].toObject()).toJson(), wb)) {
+        outError = "Bad manifest"; delete wb; return nullptr;
+    }
+    QJsonArray sheets = root["sheets"].toArray();
+    for (int i = 0; i < sheets.size(); ++i) {
+        QByteArray sheetData = QJsonDocument(sheets[i].toObject()).toJson();
+        if (!deserializeSheet(sheetData, wb, i)) {
+            outError = QString("Failed reading sheet %1").arg(i);
+            delete wb; return nullptr;
+        }
+    }
+    return wb;
+#endif
 }
 
 // ---------- Serialization ----------
