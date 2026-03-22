@@ -1,0 +1,11 @@
+{
+  "name":           "Data Cleaner",
+  "version":        "1.0.0",
+  "description":    "Adds TRIM_CELLS(), PROPER_CASE(), and REMOVE_WHITESPACE() formulas. Also provides menu actions for cleaning selected ranges.",
+  "author":         "OpenSheet Contributors",
+  "type":           "python",
+  "entry":          "main.py",
+  "minAppVersion":  "1.0.0",
+  "permissions":    ["formulas", "menu"],
+  "homepage":       "https://github.com/opensheet/plugins"
+}

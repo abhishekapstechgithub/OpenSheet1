@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "application": "OpenSheet",
+  "sheetCount": 3,
+  "sheetNames": ["Tasks", "Timeline", "Summary"],
+  "_templateMeta": {
+    "name": "Project Tracker",
+    "description": "Track project tasks, deadlines, assignees, and progress. Includes a timeline view and summary dashboard.",
+    "category": "Project Management",
+    "author": "OpenSheet Templates",
+    "previewCells": {
+      "A1": "Task",
+      "B1": "Assignee",
+      "C1": "Start Date",
+      "D1": "Due Date",
+      "E1": "Status",
+      "F1": "Priority",
+      "G1": "% Complete",
+      "A2": "Project kickoff meeting",
+      "B2": "Team Lead",
+      "C2": "01/04/2024",
+      "D2": "01/04/2024",
+      "E2": "Done",
+      "F2": "High",
+      "G2": "100"
+    }
+  }
+}

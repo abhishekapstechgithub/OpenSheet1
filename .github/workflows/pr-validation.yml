@@ -1,0 +1,211 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [ opened, synchronize, reopened ]
+
+env:
+  QT_VERSION: "6.6.3"
+
+permissions:
+  contents:      read
+  pull-requests: write   # post review comments
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  Quick smoke build (Linux, Release, no tests)
+# ──────────────────────────────────────────────────────────────────────────────
+  smoke-build:
+    name: "Smoke Build · Linux"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version:          ${{ env.QT_VERSION }}
+          host:             linux
+          target:           desktop
+          arch:             gcc_64
+          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork"
+          cache:            true
+          cache-key-prefix: qt6-pr
+
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            gcc-12 g++-12 cmake ninja-build \
+            libsqlite3-dev libgl1-mesa-dev libxkbcommon-dev
+
+      - name: Configure
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=gcc-12 \
+            -DCMAKE_CXX_COMPILER=g++-12 \
+            -DOPENSHEET_BUILD_TESTS=OFF
+
+      - name: Build
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Verify binary exists
+        run: test -f build/bin/opensheet && echo "Binary OK"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  Fast unit tests
+# ──────────────────────────────────────────────────────────────────────────────
+  fast-tests:
+    name: "Unit Tests · Linux"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version:          ${{ env.QT_VERSION }}
+          host:             linux
+          target:           desktop
+          arch:             gcc_64
+          modules:          "qtcharts qtsql qtsvg qtxml"
+          cache:            true
+          cache-key-prefix: qt6-pr-tests
+
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            gcc-12 g++-12 cmake ninja-build \
+            libsqlite3-dev libgl1-mesa-dev xvfb
+
+      - name: Configure
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=gcc-12 \
+            -DCMAKE_CXX_COMPILER=g++-12 \
+            -DOPENSHEET_BUILD_TESTS=ON
+
+      - name: Build tests
+        run: cmake --build build --parallel $(nproc) --target test_engine test_fileio
+
+      - name: Run tests
+        env:
+          DISPLAY: ":99"
+        run: |
+          Xvfb :99 -screen 0 1024x768x24 &
+          sleep 1
+          cd build
+          ctest --output-on-failure --timeout 60 \
+            -R "(test_engine|test_fileio)"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  Format check (fast)
+# ──────────────────────────────────────────────────────────────────────────────
+  format-check:
+    name: "Format · clang-format"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y clang-format-15
+
+      - name: Check only changed files
+        run: |
+          BASE=${{ github.event.pull_request.base.sha }}
+          HEAD=${{ github.event.pull_request.head.sha }}
+          CHANGED=$(git diff --name-only $BASE $HEAD -- '*.cpp' '*.h' | tr '\n' ' ')
+          if [ -z "$CHANGED" ]; then
+            echo "No C++ files changed, skipping format check."
+            exit 0
+          fi
+          echo "Checking: $CHANGED"
+          echo "$CHANGED" | xargs clang-format-15 --dry-run \
+            --style="{BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 100}" \
+            -Werror 2>&1
+          echo "Format check passed."
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  Post summary comment on PR
+# ──────────────────────────────────────────────────────────────────────────────
+  pr-summary:
+    name: "Post PR Summary"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    needs: [ smoke-build, fast-tests, format-check ]
+    if: always()
+
+    steps:
+      - name: Post status comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const jobs = {
+              'Smoke Build':   '${{ needs.smoke-build.result }}',
+              'Unit Tests':    '${{ needs.fast-tests.result }}',
+              'Format Check':  '${{ needs.format-check.result }}',
+            };
+            const icon = (r) => r === 'success' ? '✅' : r === 'skipped' ? '⏭' : '❌';
+            const rows = Object.entries(jobs)
+              .map(([n, r]) => `| ${icon(r)} ${n} | ${r} |`)
+              .join('\n');
+            const allPassed = Object.values(jobs).every(r => r === 'success' || r === 'skipped');
+            const body = [
+              `## OpenSheet CI · PR #${{ github.event.pull_request.number }}`,
+              '',
+              `| Job | Status |`,
+              `|-----|--------|`,
+              rows,
+              '',
+              allPassed
+                ? '**All checks passed.** This PR is ready for review.'
+                : '**Some checks failed.** Please review the errors above.',
+            ].join('\n');
+
+            // Find & update existing comment, or create new one
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('OpenSheet CI')
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

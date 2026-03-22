@@ -6,6 +6,10 @@ add_library(os_ui STATIC
     sheet_tabs.cpp
     status_bar.cpp
     side_panel.cpp
+    find_replace_dialog.cpp
+    cell_format_dialog.cpp
+    insert_function_dialog.cpp
+    chart_dialog.cpp
 )
 target_link_libraries(os_ui PUBLIC
     os_engine os_core os_charts

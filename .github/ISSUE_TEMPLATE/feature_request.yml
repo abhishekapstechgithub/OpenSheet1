@@ -1,0 +1,43 @@
+name: Feature Request
+description: Suggest a new feature for OpenSheet
+title: "[Feature]: "
+labels: ["enhancement"]
+
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: A short description of what you want.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why would this be useful? What problem does it solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Implementation
+      description: How do you imagine this working? (Optional but helpful)
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Spreadsheet Engine / Formulas
+        - UI / Ribbon / Toolbar
+        - File Formats
+        - Charts
+        - Plugin System
+        - Performance
+        - Localization
+        - Other
+    validations:
+      required: true

@@ -1,0 +1,206 @@
+name: OpenSheet Nightly
+
+on:
+  schedule:
+    - cron: "0 2 * * *"     # 02:00 UTC every night
+  workflow_dispatch:         # manual trigger
+
+env:
+  QT_VERSION: "6.6.3"
+
+permissions:
+  contents: read
+  issues:   write           # post failure issue
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+jobs:
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  Full matrix: Debug + Release × Linux + Windows + macOS
+# ──────────────────────────────────────────────────────────────────────────────
+  nightly-matrix:
+    name: "Nightly · ${{ matrix.os }} · ${{ matrix.build_type }}"
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            build_type: Debug
+            compiler_c:   gcc-12
+            compiler_cxx: g++-12
+
+          - os: ubuntu-22.04
+            build_type: Release
+            compiler_c:   gcc-12
+            compiler_cxx: g++-12
+
+          - os: ubuntu-22.04
+            build_type: RelWithDebInfo
+            compiler_c:   clang-15
+            compiler_cxx: clang++-15
+
+          - os: windows-2022
+            build_type: Debug
+
+          - os: windows-2022
+            build_type: Release
+
+          - os: macos-13
+            build_type: Release
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Qt (cached) ────────────────────────────────────────────────────────
+      - name: Install Qt6 (Linux)
+        if: runner.os == 'Linux'
+        uses: jurplel/install-qt-action@v3
+        with:
+          version:          ${{ env.QT_VERSION }}
+          host:             linux
+          target:           desktop
+          arch:             gcc_64
+          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork"
+          cache:            true
+          cache-key-prefix: qt6-nightly-linux
+
+      - name: Install Qt6 (Windows)
+        if: runner.os == 'Windows'
+        uses: jurplel/install-qt-action@v3
+        with:
+          version:          ${{ env.QT_VERSION }}
+          host:             windows
+          target:           desktop
+          arch:             win64_msvc2019_64
+          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork"
+          cache:            true
+          cache-key-prefix: qt6-nightly-windows
+
+      - name: Install Qt6 (macOS)
+        if: runner.os == 'macOS'
+        uses: jurplel/install-qt-action@v3
+        with:
+          version:          ${{ env.QT_VERSION }}
+          host:             mac
+          target:           desktop
+          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork"
+          cache:            true
+          cache-key-prefix: qt6-nightly-macos
+
+      # ── System deps ────────────────────────────────────────────────────────
+      - name: System deps (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            gcc-12 g++-12 clang-15 clang++-15 \
+            cmake ninja-build libsqlite3-dev \
+            libgl1-mesa-dev libxkbcommon-dev xvfb
+
+      - name: System deps (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          vcpkg integrate install
+          vcpkg install sqlite3:x64-windows
+
+      - name: System deps (macOS)
+        if: runner.os == 'macOS'
+        run: brew install sqlite3 ninja
+
+      # ── Configure ──────────────────────────────────────────────────────────
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_C_COMPILER=${{ matrix.compiler_c }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.compiler_cxx }} \
+            -DOPENSHEET_BUILD_TESTS=ON
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          cmake -B build -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+            -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows `
+            -DOPENSHEET_BUILD_TESTS=ON
+
+      - name: Configure (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
+            -DOPENSHEET_BUILD_TESTS=ON
+
+      # ── Build ──────────────────────────────────────────────────────────────
+      - name: Build (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: cmake --build build --parallel 4
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: cmake --build build --config ${{ matrix.build_type }} --parallel
+
+      # ── Test ───────────────────────────────────────────────────────────────
+      - name: Test (Linux)
+        if: runner.os == 'Linux'
+        env:
+          DISPLAY: ":99"
+        run: |
+          Xvfb :99 -screen 0 1024x768x24 &
+          sleep 1
+          cd build && ctest --output-on-failure --timeout 120
+
+      - name: Test (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        working-directory: build
+        run: ctest -C ${{ matrix.build_type }} --output-on-failure --timeout 120
+
+      - name: Test (macOS)
+        if: runner.os == 'macOS'
+        working-directory: build
+        run: ctest --output-on-failure --timeout 120
+
+      # ── CTest XML results ──────────────────────────────────────────────────
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "nightly-test-${{ matrix.os }}-${{ matrix.build_type }}"
+          path: build/Testing/
+          retention-days: 7
+
+  # ── Open GitHub issue on failure ──────────────────────────────────────────
+  notify-failure:
+    name: "Open issue on nightly failure"
+    runs-on: ubuntu-22.04
+    needs: nightly-matrix
+    if: failure()
+
+    steps:
+      - name: Create failure issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              title: `Nightly build failed (${new Date().toISOString().split('T')[0]})`,
+              body:  `The nightly build failed.\n\nRun: ${runUrl}\n\nPlease investigate.`,
+              labels: ['bug', 'ci-failure']
+            });

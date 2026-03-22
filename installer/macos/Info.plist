@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>            <string>OpenSheet</string>
+    <key>CFBundleDisplayName</key>     <string>OpenSheet</string>
+    <key>CFBundleIdentifier</key>      <string>io.opensheet.OpenSheet</string>
+    <key>CFBundleVersion</key>         <string>1.0.0</string>
+    <key>CFBundleShortVersionString</key><string>1.0.0</string>
+    <key>CFBundlePackageType</key>     <string>APPL</string>
+    <key>CFBundleExecutable</key>      <string>opensheet</string>
+    <key>CFBundleIconFile</key>        <string>opensheet.icns</string>
+    <key>NSHighResolutionCapable</key> <true/>
+    <key>NSSupportsAutomaticGraphicsSwitching</key><true/>
+    <key>LSMinimumSystemVersion</key>  <string>12.0</string>
+    <key>NSHumanReadableCopyright</key>
+        <string>Copyright © 2024 OpenSheet Project. MIT License.</string>
+
+    <!-- File type associations -->
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>         <string>OpenSheet Workbook</string>
+            <key>CFBundleTypeExtensions</key>
+            <array><string>opensheet</string></array>
+            <key>CFBundleTypeRole</key>         <string>Editor</string>
+            <key>CFBundleTypeIconFile</key>     <string>opensheet-doc.icns</string>
+            <key>LSHandlerRank</key>            <string>Owner</string>
+            <key>LSItemContentTypes</key>
+            <array><string>io.opensheet.document</string></array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>         <string>Microsoft Excel Spreadsheet</string>
+            <key>CFBundleTypeExtensions</key>
+            <array><string>xlsx</string><string>xls</string></array>
+            <key>CFBundleTypeRole</key>         <string>Editor</string>
+            <key>LSHandlerRank</key>            <string>Alternate</string>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>         <string>CSV File</string>
+            <key>CFBundleTypeExtensions</key>
+            <array><string>csv</string></array>
+            <key>CFBundleTypeRole</key>         <string>Editor</string>
+            <key>LSHandlerRank</key>            <string>Alternate</string>
+        </dict>
+    </array>
+
+    <key>UTExportedTypeDeclarations</key>
+    <array>
+        <dict>
+            <key>UTTypeIdentifier</key>         <string>io.opensheet.document</string>
+            <key>UTTypeDescription</key>        <string>OpenSheet Workbook</string>
+            <key>UTTypeConformsTo</key>
+            <array><string>public.data</string></array>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array><string>opensheet</string></array>
+            </dict>
+        </dict>
+    </array>
+</dict>
+</plist>

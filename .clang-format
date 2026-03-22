@@ -1,0 +1,87 @@
+---
+BasedOnStyle:           Google
+Language:               Cpp
+Standard:               c++20
+
+# Indentation
+IndentWidth:            4
+TabWidth:               4
+UseTab:                 Never
+ContinuationIndentWidth: 4
+ConstructorInitializerIndentWidth: 4
+IndentCaseLabels:       true
+IndentPPDirectives:     BeforeHash
+NamespaceIndentation:   None
+
+# Line length
+ColumnLimit:            100
+ReflowComments:         true
+
+# Braces
+BreakBeforeBraces:      Attach
+BraceWrapping:
+  AfterClass:           true
+  AfterControlStatement: Never
+  AfterEnum:            false
+  AfterFunction:        true
+  AfterNamespace:       false
+  AfterStruct:          true
+  BeforeElse:           false
+  IndentBraces:         false
+
+# Spacing
+SpaceBeforeParens:      ControlStatements
+SpaceInEmptyParentheses: false
+SpacesInAngles:         false
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses:    false
+SpacesInSquareBrackets: false
+SpaceAfterCStyleCast:   false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeRangeBasedForLoopColon: true
+
+# Alignment
+AlignAfterOpenBracket:  Align
+AlignConsecutiveAssignments:
+  Enabled:              true
+  AcrossEmptyLines:     false
+  AcrossComments:       false
+AlignConsecutiveDeclarations:
+  Enabled:              false
+AlignTrailingComments:  true
+AlignOperands:          Align
+
+# Includes
+SortIncludes:           CaseSensitive
+IncludeBlocks:          Regroup
+IncludeCategories:
+  # Qt headers
+  - Regex:    '^<Q[A-Z]'
+    Priority: 2
+  # Standard library
+  - Regex:    '^<[a-z]'
+    Priority: 3
+  # Project headers
+  - Regex:    '.*'
+    Priority: 1
+
+# Line breaks
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Empty
+BreakBeforeBinaryOperators: NonAssignment
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList:   BeforeColon
+BreakStringLiterals:    true
+
+# Pointer alignment
+PointerAlignment:       Left
+ReferenceAlignment:     Left
+
+# Other
+MaxEmptyLinesToKeep:    2
+EmptyLineBeforeAccessModifier: LogicalBlock
+FixNamespaceComments:   true
+ShortNamespaceLines:    0
+SeparateDefinitionBlocks: Leave

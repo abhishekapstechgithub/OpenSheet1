@@ -1,0 +1,94 @@
+# Build directories
+build/
+build-*/
+out/
+cmake-build-*/
+.cmake/
+
+# Binaries
+bin/
+*.exe
+*.dll
+*.so
+*.so.*
+*.dylib
+*.a
+*.lib
+
+# CMake generated
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+*.cmake
+!cmake/*.cmake
+
+# Qt generated
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qm
+*.jom
+
+# IDE files
+.vscode/
+.idea/
+*.user
+*.creator
+*.creator.user
+*.config
+*.files
+*.includes
+*.pro.user
+*.qbs.user
+*.kdev4
+.kdev4/
+*.cbp
+*.cproject
+*.xcodeproj/
+*.xcworkspace/
+.DS_Store
+Thumbs.db
+
+# Logs and temp
+logs/*.log
+temp/
+*.tmp
+*.bak
+*.swp
+*~
+
+# Coverage
+coverage/
+*.gcov
+*.gcda
+*.gcno
+*.info
+
+# Packages / installers
+*.zip
+*.tar.gz
+*.deb
+*.rpm
+*.dmg
+*.AppImage
+*.msi
+*.nsis
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+
+# Coredumps
+core
+core.*
+vgcore.*

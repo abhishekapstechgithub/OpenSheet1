@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Background -->
+  <rect width="256" height="256" rx="48" fill="#185FA5"/>
+
+  <!-- Grid lines -->
+  <line x1="88"  y1="52" x2="88"  y2="204" stroke="white" stroke-opacity="0.25" stroke-width="2"/>
+  <line x1="140" y1="52" x2="140" y2="204" stroke="white" stroke-opacity="0.25" stroke-width="2"/>
+  <line x1="192" y1="52" x2="192" y2="204" stroke="white" stroke-opacity="0.25" stroke-width="2"/>
+  <line x1="52"  y1="88" x2="204" y2="88"  stroke="white" stroke-opacity="0.25" stroke-width="2"/>
+  <line x1="52"  y1="128" x2="204" y2="128" stroke="white" stroke-opacity="0.25" stroke-width="2"/>
+  <line x1="52"  y1="168" x2="204" y2="168" stroke="white" stroke-opacity="0.25" stroke-width="2"/>
+
+  <!-- Outer border of grid -->
+  <rect x="52" y="52" width="152" height="152" rx="6"
+        fill="none" stroke="white" stroke-opacity="0.6" stroke-width="3"/>
+
+  <!-- Header row highlight -->
+  <rect x="52" y="52" width="152" height="36" rx="6"
+        fill="white" fill-opacity="0.18"/>
+  <rect x="52" y="52" width="36" height="152" rx="6"
+        fill="white" fill-opacity="0.1"/>
+
+  <!-- "Formula bar" accent stripe in bottom-left cell -->
+  <rect x="57" y="133" width="26" height="26" rx="2"
+        fill="white" fill-opacity="0.35"/>
+
+  <!-- Sigma (Σ) symbol in center -->
+  <text x="128" y="152" font-family="Georgia, serif" font-size="72"
+        font-weight="bold" fill="white" text-anchor="middle"
+        dominant-baseline="middle">Σ</text>
+</svg>

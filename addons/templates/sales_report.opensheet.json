@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "application": "OpenSheet",
+  "appVersion": "1.0.0",
+  "created": "2024-03-01T00:00:00Z",
+  "sheetCount": 3,
+  "activeSheet": 0,
+  "sheetNames": ["Dashboard", "Sales Data", "Chart Data"],
+  "_templateMeta": {
+    "name": "Monthly Sales Report",
+    "description": "A professional sales tracking workbook with dashboard, data entry sheet, and chart-ready summary.",
+    "category": "Business",
+    "author": "OpenSheet Templates"
+  }
+}

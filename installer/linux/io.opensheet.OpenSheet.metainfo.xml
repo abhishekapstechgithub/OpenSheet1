@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.opensheet.OpenSheet</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>OpenSheet</name>
+  <summary>Professional open-source spreadsheet application</summary>
+
+  <description>
+    <p>
+      OpenSheet is a fast, professional spreadsheet application built with C++20 and Qt6.
+      It supports Excel-compatible formulas, multiple file formats, charts, conditional
+      formatting, a plugin system, and both light and dark themes.
+    </p>
+    <ul>
+      <li>30+ built-in spreadsheet formulas (SUM, IF, VLOOKUP, …)</li>
+      <li>Read and write .xlsx, .csv, and native .opensheet files</li>
+      <li>Bar, Line, Pie, Scatter, and Area charts</li>
+      <li>Conditional formatting, sort, filter, freeze panes</li>
+      <li>Plugin system: C++ shared libs and Python scripts</li>
+      <li>Undo/redo (100 levels), auto-save, crash recovery</li>
+      <li>Light and dark themes, localization support</li>
+    </ul>
+  </description>
+
+  <url type="homepage">https://github.com/opensheet/opensheet</url>
+  <url type="bugtracker">https://github.com/opensheet/opensheet/issues</url>
+  <url type="vcs-browser">https://github.com/opensheet/opensheet</url>
+
+  <provides>
+    <binary>opensheet</binary>
+    <mediatype>application/vnd.opensheet</mediatype>
+    <mediatype>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</mediatype>
+    <mediatype>text/csv</mediatype>
+  </provides>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>OpenSheet main window with sample spreadsheet</caption>
+      <image>https://raw.githubusercontent.com/opensheet/opensheet/main/docs/screenshot.png</image>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="1.0.0" date="2024-03-01">
+      <description><p>Initial release.</p></description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1"/>
+
+  <categories>
+    <category>Office</category>
+    <category>Spreadsheet</category>
+  </categories>
+</component>

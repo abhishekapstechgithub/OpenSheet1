@@ -1,0 +1,18 @@
+[Desktop Entry]
+Name=OpenSheet
+GenericName=Spreadsheet
+Comment=Professional open-source spreadsheet application
+Exec=opensheet %F
+Icon=opensheet
+Terminal=false
+Type=Application
+Categories=Office;Spreadsheet;
+MimeType=application/vnd.opensheet;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;text/csv;text/tab-separated-values;
+Keywords=spreadsheet;excel;calc;office;
+StartupNotify=true
+StartupWMClass=opensheet
+Actions=NewWindow;
+
+[Desktop Action NewWindow]
+Name=New Workbook
+Exec=opensheet

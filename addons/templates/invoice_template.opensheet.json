@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "application": "OpenSheet",
+  "sheetCount": 1,
+  "sheetNames": ["Invoice"],
+  "_templateMeta": {
+    "name": "Invoice Template",
+    "description": "Professional invoice template with automatic totals, tax calculation, and company branding area.",
+    "category": "Business",
+    "author": "OpenSheet Templates",
+    "previewCells": {
+      "A1": "INVOICE",
+      "A3": "Bill To:",
+      "E3": "Invoice #:",
+      "E4": "Date:",
+      "E5": "Due Date:",
+      "A8": "Description",
+      "B8": "Qty",
+      "C8": "Unit Price",
+      "D8": "Tax %",
+      "E8": "Total",
+      "A14": "Subtotal",
+      "A15": "Tax",
+      "A16": "TOTAL DUE",
+      "E14": "=SUM(E9:E13)",
+      "E15": "=E14*0.1",
+      "E16": "=E14+E15"
+    }
+  }
+}

@@ -1,10 +1,14 @@
 add_library(os_core STATIC
-    file_system/file_manager.cpp
+    file_manager.cpp
     file_system/csv_reader.cpp
     file_system/xlsx_reader.cpp
     file_system/opensheet_format.cpp
     settings_manager.cpp
     crash_recovery.cpp
+    print_manager.cpp
+    localization_manager.cpp
+    logger.cpp
+    theme_manager.cpp
 )
 target_link_libraries(os_core PUBLIC
     os_engine Qt6::Core Qt6::Xml Qt6::Network SQLite::SQLite3

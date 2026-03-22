@@ -1,0 +1,508 @@
+name: OpenSheet CI/CD
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Triggers
+# ─────────────────────────────────────────────────────────────────────────────
+on:
+  push:
+    branches: [ main, develop, "feature/**", "fix/**" ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ created ]
+  workflow_dispatch:
+    inputs:
+      run_tests:
+        description: "Run unit tests?"
+        required: false
+        default: "true"
+        type: boolean
+      build_type:
+        description: "CMake build type"
+        required: false
+        default: "Release"
+        type: choice
+        options: [ Release, Debug, RelWithDebInfo ]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Global env
+# ─────────────────────────────────────────────────────────────────────────────
+env:
+  QT_VERSION: "6.6.3"
+  BUILD_TYPE: ${{ github.event.inputs.build_type || 'Release' }}
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  1.  LINUX  (Ubuntu 22.04 · GCC 12)
+# ══════════════════════════════════════════════════════════════════════════════
+  build-linux:
+    name: "Linux · Ubuntu 22.04 · GCC 12"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Qt6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version:          ${{ env.QT_VERSION }}
+          host:             linux
+          target:           desktop
+          arch:             gcc_64
+          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork qtprintsupport"
+          cache:            true
+          cache-key-prefix: qt6-linux
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            gcc-12 g++-12 cmake ninja-build \
+            libsqlite3-dev libgl1-mesa-dev \
+            libxkbcommon-dev libxkbcommon-x11-dev \
+            libvulkan-dev libfontconfig1-dev \
+            python3-dev xvfb lcov
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 100
+
+      - name: Print toolchain versions
+        run: |
+          gcc --version && g++ --version
+          cmake --version && ninja --version
+          python3 --version
+
+      - name: Cache CMake build
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: cmake-linux-${{ env.BUILD_TYPE }}-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: cmake-linux-${{ env.BUILD_TYPE }}-
+
+      - name: Configure
+        run: |
+          cmake -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_C_COMPILER=gcc-12 \
+            -DCMAKE_CXX_COMPILER=g++-12 \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DOPENSHEET_BUILD_TESTS=ON \
+            -DOPENSHEET_PYTHON_SUPPORT=ON \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/dist/linux
+
+      - name: Build
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Run tests
+        if: ${{ github.event.inputs.run_tests != 'false' }}
+        env:
+          DISPLAY: ":99"
+        run: |
+          Xvfb :99 -screen 0 1024x768x24 &
+          sleep 1
+          cd build && ctest --output-on-failure --timeout 120 --parallel $(nproc)
+
+      - name: Stage install
+        run: |
+          cmake --install build
+          for dir in themes localization addons config; do
+            cp -r $dir dist/linux/ 2>/dev/null || true
+          done
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: opensheet-linux-x64
+          path: dist/linux/
+          retention-days: 30
+
+      - name: Upload compile_commands (for lint)
+        uses: actions/upload-artifact@v4
+        with:
+          name: compile-commands
+          path: build/compile_commands.json
+          retention-days: 1
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  2.  WINDOWS  (Windows Server 2022 · MSVC 2022)
+# ══════════════════════════════════════════════════════════════════════════════
+  build-windows:
+    name: "Windows · Server 2022 · MSVC 2022"
+    runs-on: windows-2022
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Qt6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version:          ${{ env.QT_VERSION }}
+          host:             windows
+          target:           desktop
+          arch:             win64_msvc2019_64
+          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork qtprintsupport"
+          cache:            true
+          cache-key-prefix: qt6-windows
+
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: C:/vcpkg/installed
+          key: vcpkg-sqlite3-${{ hashFiles('**/CMakeLists.txt') }}
+
+      - name: Install SQLite3 (vcpkg)
+        shell: powershell
+        run: |
+          vcpkg integrate install
+          vcpkg install sqlite3:x64-windows
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache CMake build
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: cmake-windows-${{ env.BUILD_TYPE }}-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: cmake-windows-${{ env.BUILD_TYPE }}-
+
+      - name: Configure
+        shell: powershell
+        run: |
+          cmake -B build `
+            -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
+            -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows `
+            -DOPENSHEET_BUILD_TESTS=ON `
+            -DOPENSHEET_PYTHON_SUPPORT=ON `
+            -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/dist/windows"
+
+      - name: Build
+        shell: powershell
+        run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+
+      - name: Run tests
+        if: ${{ github.event.inputs.run_tests != 'false' }}
+        shell: powershell
+        working-directory: build
+        run: ctest -C ${{ env.BUILD_TYPE }} --output-on-failure --timeout 120
+
+      - name: Deploy Qt DLLs (windeployqt)
+        shell: powershell
+        run: |
+          $mode = if ("${{ env.BUILD_TYPE }}" -eq "Release") { "--release" } else { "--debug" }
+          & "$env:Qt6_DIR/bin/windeployqt.exe" `
+              $mode --no-translations --no-system-d3d-compiler `
+              "build/bin/${{ env.BUILD_TYPE }}/opensheet.exe"
+
+      - name: Stage install
+        shell: powershell
+        run: |
+          cmake --install build --config ${{ env.BUILD_TYPE }}
+          foreach ($dir in @("themes","localization","addons","config")) {
+            if (Test-Path $dir) {
+              Copy-Item -Recurse $dir "dist/windows/$dir"
+            }
+          }
+
+      - name: Create Windows ZIP
+        shell: powershell
+        run: |
+          Compress-Archive -Path "dist/windows/*" `
+            -DestinationPath "OpenSheet-windows-x64.zip"
+
+      - name: Upload Windows ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: opensheet-windows-x64
+          path: OpenSheet-windows-x64.zip
+          retention-days: 30
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  3.  macOS  (macOS 13 Ventura · Universal x86_64 + arm64)
+# ══════════════════════════════════════════════════════════════════════════════
+  build-macos:
+    name: "macOS · Ventura 13 · Universal"
+    runs-on: macos-13
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Qt6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version:          ${{ env.QT_VERSION }}
+          host:             mac
+          target:           desktop
+          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork qtprintsupport"
+          cache:            true
+          cache-key-prefix: qt6-macos
+
+      - name: Install dependencies
+        run: brew install sqlite3 ninja python3
+
+      - name: Cache CMake build
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: cmake-macos-${{ env.BUILD_TYPE }}-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: cmake-macos-${{ env.BUILD_TYPE }}-
+
+      - name: Configure (Universal Binary)
+        run: |
+          cmake -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="12.0" \
+            -DOPENSHEET_BUILD_TESTS=ON \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/dist/macos
+
+      - name: Build
+        run: cmake --build build --parallel $(sysctl -n hw.logicalcpu)
+
+      - name: Run tests
+        if: ${{ github.event.inputs.run_tests != 'false' }}
+        working-directory: build
+        run: ctest --output-on-failure --timeout 120
+
+      - name: Bundle .app
+        run: |
+          $Qt6_DIR/bin/macdeployqt build/bin/opensheet.app -verbose=2
+          for dir in themes localization addons config; do
+            cp -r $dir build/bin/opensheet.app/Contents/Resources/ 2>/dev/null || true
+          done
+
+      - name: Create DMG
+        run: |
+          hdiutil create \
+            -volname "OpenSheet" \
+            -srcfolder build/bin/opensheet.app \
+            -ov -format UDZO \
+            OpenSheet-macos-universal.dmg
+
+      - name: Upload macOS DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: opensheet-macos-universal
+          path: OpenSheet-macos-universal.dmg
+          retention-days: 30
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  4.  LINT  (clang-tidy · clang-format)
+# ══════════════════════════════════════════════════════════════════════════════
+  lint:
+    name: "Lint · clang-tidy + clang-format"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    needs: []   # runs in parallel with builds
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt6 + clang tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            qt6-base-dev libsqlite3-dev \
+            cmake ninja-build \
+            clang-15 clang-tidy-15 clang-format-15
+
+      - name: Configure (compile_commands.json)
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_C_COMPILER=clang-15 \
+            -DCMAKE_CXX_COMPILER=clang++-15
+
+      - name: clang-tidy
+        run: |
+          find office plugins -name "*.cpp" | \
+          xargs clang-tidy-15 -p build \
+            --checks='-*,readability-identifier-naming,modernize-use-override,\
+          modernize-use-nullptr,performance-unnecessary-copy-initialization,\
+          bugprone-use-after-move,clang-analyzer-*' \
+            --header-filter='.*/(office|plugins)/.*' \
+            2>&1 | tee clang-tidy-report.txt || true
+
+      - name: clang-format check
+        run: |
+          find office plugins main.cpp -name "*.cpp" -o -name "*.h" | \
+          xargs clang-format-15 --dry-run \
+            --style="{BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 100}" \
+            2>&1 | tee clang-format-report.txt || true
+
+      - name: Upload lint reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lint-reports
+          path: "*.txt"
+          retention-days: 14
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  5.  COVERAGE  (gcov · lcov · Codecov)
+# ══════════════════════════════════════════════════════════════════════════════
+  coverage:
+    name: "Coverage · gcov + lcov"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    if: |
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt6 + gcov tools
+        uses: jurplel/install-qt-action@v3
+        with:
+          version:          ${{ env.QT_VERSION }}
+          host:             linux
+          target:           desktop
+          modules:          "qtcharts qtsql qtsvg qtxml"
+          cache:            true
+          cache-key-prefix: qt6-coverage
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+            gcc-12 g++-12 cmake ninja-build lcov \
+            libsqlite3-dev libgl1-mesa-dev xvfb
+
+      - name: Configure with coverage flags
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=gcc-12 \
+            -DCMAKE_CXX_COMPILER=g++-12 \
+            "-DCMAKE_CXX_FLAGS=--coverage -fprofile-arcs -ftest-coverage" \
+            "-DCMAKE_EXE_LINKER_FLAGS=--coverage" \
+            -DOPENSHEET_BUILD_TESTS=ON
+
+      - name: Build
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Run tests
+        env:
+          DISPLAY: ":99"
+        run: |
+          Xvfb :99 -screen 0 1024x768x24 &
+          sleep 1
+          cd build && ctest --output-on-failure --timeout 60
+
+      - name: Collect lcov data
+        run: |
+          lcov --capture --directory build --output-file coverage.info \
+               --ignore-errors mismatch
+          lcov --remove coverage.info '/usr/*' '${{ runner.temp }}/Qt/*' \
+               '*/tests/*' '*/moc_*' \
+               --output-file coverage-filtered.info
+          lcov --summary coverage-filtered.info
+
+      - name: Generate HTML report
+        run: |
+          genhtml coverage-filtered.info \
+            --output-directory coverage-html \
+            --title "OpenSheet Coverage" --legend
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-html/
+          retention-days: 30
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage-filtered.info
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  6.  RELEASE  (attach all binaries to GitHub Release)
+# ══════════════════════════════════════════════════════════════════════════════
+  release:
+    name: "Publish Release"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    needs: [ build-linux, build-windows, build-macos ]
+    if: github.event_name == 'release'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts/
+
+      - name: Rename with version tag
+        run: |
+          TAG="${{ github.ref_name }}"
+          mkdir -p release-uploads
+          # Linux binary
+          cp release-artifacts/opensheet-linux-x64/bin/opensheet \
+             "release-uploads/opensheet-${TAG}-linux-x64" 2>/dev/null || \
+          cp release-artifacts/opensheet-linux-x64/opensheet \
+             "release-uploads/opensheet-${TAG}-linux-x64" 2>/dev/null || true
+          # Windows ZIP
+          cp "release-artifacts/opensheet-windows-x64/OpenSheet-windows-x64.zip" \
+             "release-uploads/OpenSheet-${TAG}-windows-x64.zip" 2>/dev/null || true
+          # macOS DMG
+          cp "release-artifacts/opensheet-macos-universal/OpenSheet-macos-universal.dmg" \
+             "release-uploads/OpenSheet-${TAG}-macos-universal.dmg" 2>/dev/null || true
+          echo "Release files:"
+          ls -lh release-uploads/
+
+      - name: Generate checksums
+        run: |
+          cd release-uploads
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-uploads/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

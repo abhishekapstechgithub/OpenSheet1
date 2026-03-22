@@ -1,0 +1,67 @@
+{
+  "language": "ja-JP",
+  "name": "日本語",
+
+  "menu": {
+    "file":       "ファイル",
+    "home":       "ホーム",
+    "insert":     "挿入",
+    "pageLayout": "ページレイアウト",
+    "formulas":   "数式",
+    "data":       "データ",
+    "review":     "校閲",
+    "view":       "表示",
+    "help":       "ヘルプ"
+  },
+
+  "action": {
+    "new":         "新規",
+    "open":        "開く",
+    "save":        "保存",
+    "saveAs":      "名前を付けて保存",
+    "print":       "印刷",
+    "exit":        "終了",
+    "undo":        "元に戻す",
+    "redo":        "やり直す",
+    "cut":         "切り取り",
+    "copy":        "コピー",
+    "paste":       "貼り付け",
+    "find":        "検索",
+    "findReplace": "検索と置換",
+    "bold":        "太字",
+    "italic":      "斜体",
+    "underline":   "下線",
+    "alignLeft":   "左揃え",
+    "alignCenter": "中央揃え",
+    "alignRight":  "右揃え",
+    "sortAZ":      "昇順で並べ替え",
+    "sortZA":      "降順で並べ替え",
+    "filter":      "フィルター",
+    "insertChart": "グラフの挿入",
+    "darkMode":    "ダークモード",
+    "about":       "OpenSheet について"
+  },
+
+  "dialog": {
+    "unsavedChanges": "未保存の変更",
+    "unsavedMsg":     "ブックに未保存の変更があります。閉じる前に保存しますか?",
+    "save":           "保存",
+    "discard":        "保存しない",
+    "cancel":         "キャンセル"
+  },
+
+  "status": {
+    "ready":   "準備完了",
+    "editing": "編集",
+    "sum":     "合計",
+    "avg":     "平均",
+    "count":   "データの個数"
+  },
+
+  "sheet": {
+    "defaultName": "シート",
+    "addSheet":    "シートの追加",
+    "renameSheet": "名前の変更",
+    "deleteSheet": "削除"
+  }
+}

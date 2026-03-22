@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "application": "OpenSheet",
+  "sheetCount": 2,
+  "sheetNames": ["Budget", "Summary"],
+  "_templateMeta": {
+    "name": "Personal Budget Tracker",
+    "description": "Track monthly income and expenses with automatic totals and category breakdowns.",
+    "category": "Finance",
+    "author": "OpenSheet Templates"
+  }
+}

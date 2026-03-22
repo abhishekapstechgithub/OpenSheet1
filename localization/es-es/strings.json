@@ -1,0 +1,93 @@
+{
+  "language": "es-ES",
+  "name": "Español (España)",
+
+  "menu": {
+    "file":       "Archivo",
+    "home":       "Inicio",
+    "insert":     "Insertar",
+    "pageLayout": "Diseño de página",
+    "formulas":   "Fórmulas",
+    "data":       "Datos",
+    "review":     "Revisar",
+    "view":       "Vista",
+    "help":       "Ayuda"
+  },
+
+  "action": {
+    "new":         "Nuevo",
+    "open":        "Abrir",
+    "save":        "Guardar",
+    "saveAs":      "Guardar como",
+    "print":       "Imprimir",
+    "exit":        "Salir",
+    "undo":        "Deshacer",
+    "redo":        "Rehacer",
+    "cut":         "Cortar",
+    "copy":        "Copiar",
+    "paste":       "Pegar",
+    "find":        "Buscar",
+    "findReplace": "Buscar y reemplazar",
+    "bold":        "Negrita",
+    "italic":      "Cursiva",
+    "underline":   "Subrayado",
+    "alignLeft":   "Alinear a la izquierda",
+    "alignCenter": "Centrar",
+    "alignRight":  "Alinear a la derecha",
+    "sortAZ":      "Ordenar A→Z",
+    "sortZA":      "Ordenar Z→A",
+    "filter":      "Filtrar",
+    "insertRow":   "Insertar fila",
+    "deleteRow":   "Eliminar fila",
+    "insertCol":   "Insertar columna",
+    "deleteCol":   "Eliminar columna",
+    "insertChart": "Insertar gráfico",
+    "insertPivot": "Insertar tabla dinámica",
+    "freezePane":  "Inmovilizar paneles",
+    "darkMode":    "Modo oscuro",
+    "about":       "Acerca de OpenSheet"
+  },
+
+  "dialog": {
+    "unsavedChanges": "Cambios sin guardar",
+    "unsavedMsg":     "El libro tiene cambios sin guardar. ¿Guardar antes de cerrar?",
+    "save":           "Guardar",
+    "discard":        "No guardar",
+    "cancel":         "Cancelar"
+  },
+
+  "ribbon": {
+    "clipboard":  "Portapapeles",
+    "font":       "Fuente",
+    "alignment":  "Alineación",
+    "number":     "Número",
+    "styles":     "Estilos",
+    "cells":      "Celdas",
+    "editing":    "Modificar"
+  },
+
+  "status": {
+    "ready":   "Listo",
+    "editing": "Modificar",
+    "sum":     "Suma",
+    "avg":     "Promedio",
+    "count":   "Recuento"
+  },
+
+  "sheet": {
+    "defaultName": "Hoja",
+    "addSheet":    "Agregar hoja",
+    "renameSheet": "Cambiar nombre",
+    "deleteSheet": "Eliminar"
+  },
+
+  "error": {
+    "divZero":  "División por cero",
+    "nameErr":  "Nombre no reconocido",
+    "valueErr": "Tipo de valor incorrecto",
+    "refErr":   "Referencia de celda no válida",
+    "naErr":    "Valor no disponible",
+    "circular": "Referencia circular detectada",
+    "numErr":   "Valor numérico no válido"
+  }
+}

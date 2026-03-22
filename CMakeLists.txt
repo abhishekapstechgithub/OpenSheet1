@@ -23,15 +23,16 @@ find_package(SQLite3 REQUIRED)
 # Optional Python support for plugins
 find_package(Python3 COMPONENTS Interpreter Development QUIET)
 
-# Compiler flags
-if(MSVC)
-    add_compile_options(/W4 /MP)
-else()
-    add_compile_options(-Wall -Wextra -O2)
-endif()
+# Build options
+option(OPENSHEET_BUILD_TESTS    "Build unit tests"          ON)
+option(OPENSHEET_PYTHON_SUPPORT "Enable Python plugin loader" AUTO)
+option(OPENSHEET_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 
 # Include cmake modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+include(cmake/OpenSheetConfig.cmake)
+include(cmake/CompilerWarnings.cmake)
+include(cmake/Sanitizers.cmake)
 
 # Global include dirs
 include_directories(
