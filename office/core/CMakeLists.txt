@@ -1,9 +1,7 @@
-# Use explicit CMAKE_CURRENT_SOURCE_DIR prefix to avoid any path resolution
-# ambiguity with vcpkg's add_library wrapper (_add_library in vcpkg.cmake:653)
+# Note: file_manager.h is header-only (no .cpp needed)
 set(_core_src ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(os_core STATIC
-    ${_core_src}/file_manager.cpp
     ${_core_src}/file_system/csv_reader.cpp
     ${_core_src}/file_system/xlsx_reader.cpp
     ${_core_src}/file_system/opensheet_format.cpp
