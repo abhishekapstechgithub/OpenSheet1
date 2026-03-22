@@ -30,25 +30,18 @@ concurrency:
 
 jobs:
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  BUILD
-# ─────────────────────────────────────────────────────────────────────────────
   build:
     name: "Build · Windows · MSVC 2022"
     runs-on: windows-2022
     timeout-minutes: 60
 
     steps:
-      # ── Checkout ────────────────────────────────────────────────────────────
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # ── Install Qt6 ─────────────────────────────────────────────────────────
-      # Only list modules that are NOT bundled in qt6-base.
-      # Bundled (do NOT list): qtnetwork, qtprintsupport, qtsql, qtsvg, qtxml
-      # Optional (must list):  qtcharts
+      # Qt6 — only qtcharts is an optional module; everything else is in qt6-base
       - name: Install Qt6
         uses: jurplel/install-qt-action@v3
         with:
@@ -60,149 +53,108 @@ jobs:
           cache:            true
           cache-key-prefix: qt6-win
 
-      # ── SQLite via vcpkg ─────────────────────────────────────────────────────
-      - name: Cache vcpkg packages
+      # SQLite3 via vcpkg (provides unofficial::sqlite3::sqlite3)
+      - name: Cache vcpkg
         uses: actions/cache@v4
         with:
           path: C:/vcpkg/installed
-          key: vcpkg-sqlite3-${{ runner.os }}
+          key: vcpkg-sqlite3-${{ runner.os }}-v2
 
-      - name: Install SQLite3 (vcpkg)
+      - name: Install SQLite3
         shell: powershell
         run: |
           vcpkg integrate install
           vcpkg install sqlite3:x64-windows
 
-      # ── Python (optional plugin support) ────────────────────────────────────
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      # ── Remove stale FindQt6.cmake if it exists ──────────────────────────────
-      # This file was deleted in a previous fix but may still exist in the
-      # runner's git working tree from a cached checkout.
-      # A FindXxx.cmake file in any CMAKE_MODULE_PATH dir causes infinite
-      # recursion when vcpkg is active, because vcpkg wraps find_package().
-      - name: Remove stale FindQt6.cmake
+      # Safety: remove any stale FindXxx.cmake files from cmake/ that would
+      # cause infinite recursion with vcpkg's find_package wrapper.
+      - name: Remove stale cmake Find-modules
         shell: powershell
         run: |
-          $f = "cmake\FindQt6.cmake"
-          if (Test-Path $f) {
-            Remove-Item $f -Force
-            Write-Host "Removed stale $f"
-          } else {
-            Write-Host "$f not present - OK"
-          }
+          Get-ChildItem cmake -Filter "Find*.cmake" -ErrorAction SilentlyContinue |
+            ForEach-Object { Remove-Item $_.FullName -Force; Write-Host "Removed: $($_.Name)" }
+          Write-Host "cmake/ directory is clean."
 
-      # ── CMake cache ─────────────────────────────────────────────────────────
-      - name: Cache CMake build
-        uses: actions/cache@v4
-        with:
-          path: build
-          key: cmake-win-${{ env.BUILD_TYPE }}-${{ hashFiles('**/CMakeLists.txt') }}
-          restore-keys: cmake-win-${{ env.BUILD_TYPE }}-
+      # IMPORTANT: Do NOT cache the build directory.
+      # A stale CMakeCache.txt will preserve old source file paths from
+      # previous CMakeLists versions and cause "Cannot find source file" errors.
+      # CMake configure is fast (~30s); the cost is worth the reliability.
 
-      # ── Configure ───────────────────────────────────────────────────────────
-      # NOTE: Do NOT pass -DCMAKE_MODULE_PATH or include cmake/FindQt6.cmake
-      #       Qt6 is already on PATH via jurplel/install-qt-action.
-      #       vcpkg provides SQLite3 via CMAKE_TOOLCHAIN_FILE.
       - name: Configure CMake
         shell: powershell
         run: |
+          # Delete any leftover build dir to guarantee a clean configure
+          if (Test-Path build) { Remove-Item build -Recurse -Force }
+
           cmake -B build `
             -G "Visual Studio 17 2022" `
             -A x64 `
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
             -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
             -DVCPKG_TARGET_TRIPLET=x64-windows `
-            -Dofficial-sqlite3_FIND_PACKAGE_NAME=unofficial-sqlite3 `
             -DOPENSHEET_BUILD_TESTS=ON `
             -DOPENSHEET_PYTHON_SUPPORT=ON
 
-      # ── Build ────────────────────────────────────────────────────────────────
       - name: Build
         shell: powershell
-        run: |
-          cmake --build build `
-            --config ${{ env.BUILD_TYPE }} `
-            --parallel
+        run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
-      # ── Tests ────────────────────────────────────────────────────────────────
       - name: Run tests
         shell: powershell
         working-directory: build
         run: |
-          ctest `
-            -C ${{ env.BUILD_TYPE }} `
-            --output-on-failure `
-            --timeout 120
+          ctest -C ${{ env.BUILD_TYPE }} --output-on-failure --timeout 120
 
-      # ── Deploy Qt DLLs ───────────────────────────────────────────────────────
-      - name: Deploy Qt runtime (windeployqt)
+      - name: Deploy Qt runtime
         shell: powershell
         run: |
           $exePath = "build\bin\${{ env.BUILD_TYPE }}\opensheet.exe"
-          if (-not (Test-Path $exePath)) {
-            $exePath = "build\bin\opensheet.exe"
-          }
-          $qtBin = "$env:Qt6_DIR\bin"
-          & "$qtBin\windeployqt.exe" `
+          if (-not (Test-Path $exePath)) { $exePath = "build\bin\opensheet.exe" }
+          & "$env:Qt6_DIR\bin\windeployqt.exe" `
               --$("${{ env.BUILD_TYPE }}".ToLower()) `
               --no-translations `
               --no-system-d3d-compiler `
               "$exePath"
 
-      # ── Stage distribution folder ────────────────────────────────────────────
       - name: Stage distribution
         shell: powershell
         run: |
           $dist = "OpenSheet-dist"
           New-Item -ItemType Directory -Force -Path $dist | Out-Null
-
-          # Copy exe + Qt DLLs
           $binDir = "build\bin\${{ env.BUILD_TYPE }}"
           if (-not (Test-Path $binDir)) { $binDir = "build\bin" }
           Copy-Item -Recurse "$binDir\*" "$dist\" -ErrorAction SilentlyContinue
-
-          # Copy app data
           foreach ($dir in @("themes","localization","addons","config","resources")) {
-            if (Test-Path $dir) {
-              Copy-Item -Recurse $dir "$dist\$dir"
-            }
+            if (Test-Path $dir) { Copy-Item -Recurse $dir "$dist\$dir" }
           }
 
-          Write-Host "Distribution contents:"
-          Get-ChildItem $dist -Recurse | Select-Object FullName
-
-      # ── Create ZIP ───────────────────────────────────────────────────────────
-      - name: Create Windows ZIP
+      - name: Create ZIP
         shell: powershell
         run: |
           $tag = "${{ github.ref_name }}"
-          $zipName = "OpenSheet-$tag-windows-x64.zip"
-          Compress-Archive -Path "OpenSheet-dist\*" -DestinationPath $zipName
-          Write-Host "Created: $zipName ($('{0:N0}' -f (Get-Item $zipName).Length) bytes)"
+          $zip = "OpenSheet-$tag-windows-x64.zip"
+          Compress-Archive -Path "OpenSheet-dist\*" -DestinationPath $zip
+          Write-Host "Created: $zip"
 
-      # ── Upload artifact (every build) ────────────────────────────────────────
-      - name: Upload build artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: opensheet-windows-x64-${{ github.sha }}
           path: OpenSheet-dist\
           retention-days: 30
 
-      # ── Upload ZIP artifact ───────────────────────────────────────────────────
-      - name: Upload ZIP artifact
+      - name: Upload ZIP
         uses: actions/upload-artifact@v4
         with:
           name: opensheet-windows-x64-zip
           path: "OpenSheet-*-windows-x64.zip"
           retention-days: 30
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  RELEASE  — attach ZIP to GitHub Release
-# ─────────────────────────────────────────────────────────────────────────────
   release:
     name: "Publish Release"
     runs-on: ubuntu-latest
@@ -211,19 +163,16 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Download ZIP artifact
+      - name: Download ZIP
         uses: actions/download-artifact@v4
         with:
           name: opensheet-windows-x64-zip
           path: release/
 
-      - name: Generate checksum
-        run: |
-          cd release
-          sha256sum *.zip > SHA256SUMS.txt
-          cat SHA256SUMS.txt
+      - name: Checksum
+        run: cd release && sha256sum *.zip > SHA256SUMS.txt && cat SHA256SUMS.txt
 
-      - name: Attach to GitHub Release
+      - name: Attach to release
         uses: softprops/action-gh-release@v2
         with:
           files: |
