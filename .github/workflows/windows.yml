@@ -79,6 +79,22 @@ jobs:
         with:
           python-version: "3.11"
 
+      # ── Remove stale FindQt6.cmake if it exists ──────────────────────────────
+      # This file was deleted in a previous fix but may still exist in the
+      # runner's git working tree from a cached checkout.
+      # A FindXxx.cmake file in any CMAKE_MODULE_PATH dir causes infinite
+      # recursion when vcpkg is active, because vcpkg wraps find_package().
+      - name: Remove stale FindQt6.cmake
+        shell: powershell
+        run: |
+          $f = "cmake\FindQt6.cmake"
+          if (Test-Path $f) {
+            Remove-Item $f -Force
+            Write-Host "Removed stale $f"
+          } else {
+            Write-Host "$f not present - OK"
+          }
+
       # ── CMake cache ─────────────────────────────────────────────────────────
       - name: Cache CMake build
         uses: actions/cache@v4

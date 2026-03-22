@@ -92,3 +92,6 @@ venv/
 core
 core.*
 vgcore.*
+
+# Prevent Find-module files in cmake/ that break vcpkg builds
+cmake/Find*.cmake

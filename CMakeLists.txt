@@ -38,7 +38,8 @@ option(OPENSHEET_PYTHON_SUPPORT "Enable Python plugin loader" AUTO)
 option(OPENSHEET_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 
 # Include cmake modules
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+# Include project cmake helpers directly (do NOT add cmake/ to CMAKE_MODULE_PATH
+# because that would cause any FindXxx.cmake files there to intercept find_package calls)
 include(cmake/OpenSheetConfig.cmake)
 include(cmake/CompilerWarnings.cmake)
 include(cmake/Sanitizers.cmake)
