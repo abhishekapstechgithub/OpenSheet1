@@ -1,0 +1,59 @@
+{
+  "locale": "fr-fr",
+  "language": "Français",
+
+  "app": {
+    "name": "OpenSheet",
+    "tagline": "Tableur Professionnel"
+  },
+
+  "menu": {
+    "file":        "Fichier",
+    "home":        "Accueil",
+    "insert":      "Insertion",
+    "page_layout": "Mise en page",
+    "formulas":    "Formules",
+    "data":        "Données",
+    "review":      "Révision",
+    "view":        "Affichage",
+    "help":        "Aide"
+  },
+
+  "file": {
+    "new":         "Nouveau",
+    "open":        "Ouvrir...",
+    "save":        "Enregistrer",
+    "save_as":     "Enregistrer sous...",
+    "print":       "Imprimer...",
+    "close":       "Fermer",
+    "exit":        "Quitter",
+    "recent":      "Fichiers récents"
+  },
+
+  "edit": {
+    "undo":        "Annuler",
+    "redo":        "Rétablir",
+    "cut":         "Couper",
+    "copy":        "Copier",
+    "paste":       "Coller",
+    "find":        "Rechercher...",
+    "replace":     "Remplacer...",
+    "select_all":  "Tout sélectionner"
+  },
+
+  "dialogs": {
+    "ok":          "OK",
+    "cancel":      "Annuler",
+    "yes":         "Oui",
+    "no":          "Non",
+    "save_prompt": "Le classeur a des modifications non enregistrées. Enregistrer avant de fermer ?"
+  },
+
+  "status": {
+    "ready":       "Prêt",
+    "sum":         "Somme",
+    "average":     "Moyenne",
+    "count":       "Nombre",
+    "editing":     "Modification"
+  }
+}

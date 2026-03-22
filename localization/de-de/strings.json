@@ -1,0 +1,59 @@
+{
+  "locale": "de-de",
+  "language": "Deutsch",
+
+  "app": {
+    "name": "OpenSheet",
+    "tagline": "Professionelle Tabellenkalkulation"
+  },
+
+  "menu": {
+    "file":        "Datei",
+    "home":        "Start",
+    "insert":      "Einfügen",
+    "page_layout": "Seitenlayout",
+    "formulas":    "Formeln",
+    "data":        "Daten",
+    "review":      "Überprüfen",
+    "view":        "Ansicht",
+    "help":        "Hilfe"
+  },
+
+  "file": {
+    "new":         "Neu",
+    "open":        "Öffnen...",
+    "save":        "Speichern",
+    "save_as":     "Speichern unter...",
+    "print":       "Drucken...",
+    "close":       "Schließen",
+    "exit":        "Beenden",
+    "recent":      "Zuletzt verwendet"
+  },
+
+  "edit": {
+    "undo":        "Rückgängig",
+    "redo":        "Wiederholen",
+    "cut":         "Ausschneiden",
+    "copy":        "Kopieren",
+    "paste":       "Einfügen",
+    "find":        "Suchen...",
+    "replace":     "Ersetzen...",
+    "select_all":  "Alles auswählen"
+  },
+
+  "dialogs": {
+    "ok":          "OK",
+    "cancel":      "Abbrechen",
+    "yes":         "Ja",
+    "no":          "Nein",
+    "save_prompt": "Die Arbeitsmappe hat nicht gespeicherte Änderungen. Vor dem Schließen speichern?"
+  },
+
+  "status": {
+    "ready":       "Bereit",
+    "sum":         "Summe",
+    "average":     "Mittelwert",
+    "count":       "Anzahl",
+    "editing":     "Bearbeiten"
+  }
+}

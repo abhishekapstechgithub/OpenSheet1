@@ -1,0 +1,80 @@
+{
+  "version": "1.0.0",
+  "theme": "light",
+  "language": "en-us",
+
+  "grid": {
+    "defaultRowHeight": 22,
+    "defaultColWidth": 90,
+    "showGridLines": true,
+    "showRowNumbers": true,
+    "showColHeaders": true,
+    "gridLineColor": "#E8E7E2",
+    "selectionColor": "#B5D4F4",
+    "selectionBorderColor": "#185FA5"
+  },
+
+  "formula": {
+    "showFormulaBar": true,
+    "autoComplete": true,
+    "functionTooltips": true,
+    "iterativeCalc": false,
+    "maxIterations": 100,
+    "calcOnDemand": false
+  },
+
+  "autosave": {
+    "enabled": true,
+    "intervalSeconds": 60,
+    "keepVersions": 3
+  },
+
+  "recovery": {
+    "enabled": true,
+    "sessionFile": "session.lock"
+  },
+
+  "plugins": {
+    "enabled": true,
+    "scanOnStartup": true,
+    "pythonSupport": true
+  },
+
+  "ui": {
+    "showSidePanel": true,
+    "showStatusBar": true,
+    "showRibbon": true,
+    "ribbonMinimized": false,
+    "zoom": 100,
+    "fontAntialias": true,
+    "animationsEnabled": true
+  },
+
+  "print": {
+    "defaultOrientation": "portrait",
+    "defaultPaperSize": "A4",
+    "fitToPage": false,
+    "printGridLines": false,
+    "printHeaders": false
+  },
+
+  "performance": {
+    "maxUndoSteps": 200,
+    "virtualScrollRows": 10000,
+    "virtualScrollCols": 1000,
+    "recalcThreads": 2,
+    "cacheFormulas": true
+  },
+
+  "recentFiles": {
+    "maxItems": 10,
+    "showInStartScreen": true
+  },
+
+  "logging": {
+    "enabled": true,
+    "level": "warning",
+    "maxFileSizeMB": 10,
+    "keepFiles": 3
+  }
+}

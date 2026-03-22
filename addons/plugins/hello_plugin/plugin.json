@@ -1,0 +1,9 @@
+{
+  "name":        "Hello Plugin",
+  "version":     "1.0.0",
+  "description": "Example Python plugin for OpenSheet",
+  "author":      "OpenSheet Project",
+  "type":        "python",
+  "minAppVersion": "1.0.0",
+  "permissions": ["read_cells", "write_cells", "add_menu"]
+}

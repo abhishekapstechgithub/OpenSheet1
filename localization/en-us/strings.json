@@ -1,0 +1,197 @@
+{
+  "locale": "en-us",
+  "language": "English (US)",
+
+  "app": {
+    "name": "OpenSheet",
+    "tagline": "Professional Spreadsheet"
+  },
+
+  "menu": {
+    "file":        "File",
+    "home":        "Home",
+    "insert":      "Insert",
+    "page_layout": "Page Layout",
+    "formulas":    "Formulas",
+    "data":        "Data",
+    "review":      "Review",
+    "view":        "View",
+    "help":        "Help"
+  },
+
+  "file": {
+    "new":         "New",
+    "open":        "Open...",
+    "save":        "Save",
+    "save_as":     "Save As...",
+    "print":       "Print...",
+    "close":       "Close",
+    "exit":        "Exit",
+    "recent":      "Recent Files"
+  },
+
+  "edit": {
+    "undo":        "Undo",
+    "redo":        "Redo",
+    "cut":         "Cut",
+    "copy":        "Copy",
+    "paste":       "Paste",
+    "paste_special":"Paste Special...",
+    "find":        "Find...",
+    "replace":     "Find & Replace...",
+    "select_all":  "Select All",
+    "go_to":       "Go To..."
+  },
+
+  "ribbon": {
+    "clipboard":   "Clipboard",
+    "font":        "Font",
+    "alignment":   "Alignment",
+    "number":      "Number",
+    "styles":      "Styles",
+    "cells":       "Cells",
+    "editing":     "Editing",
+    "bold":        "Bold",
+    "italic":      "Italic",
+    "underline":   "Underline",
+    "font_color":  "Font Color",
+    "fill_color":  "Fill Color",
+    "borders":     "Borders",
+    "merge":       "Merge & Center",
+    "wrap":        "Wrap Text",
+    "auto_sum":    "AutoSum",
+    "sort_az":     "Sort A to Z",
+    "sort_za":     "Sort Z to A",
+    "filter":      "Filter",
+    "insert_row":  "Insert Row",
+    "delete_row":  "Delete Row",
+    "insert_col":  "Insert Column",
+    "delete_col":  "Delete Column",
+    "cond_format": "Conditional Formatting",
+    "format_table":"Format as Table",
+    "cell_styles": "Cell Styles"
+  },
+
+  "insert": {
+    "chart":       "Chart",
+    "pivot":       "PivotTable",
+    "table":       "Table",
+    "image":       "Image",
+    "shape":       "Shape",
+    "hyperlink":   "Hyperlink",
+    "comment":     "Comment",
+    "header_footer":"Header & Footer",
+    "sparkline":   "Sparkline"
+  },
+
+  "formulas": {
+    "auto_sum":    "AutoSum",
+    "recently_used":"Recently Used",
+    "financial":   "Financial",
+    "logical":     "Logical",
+    "text":        "Text",
+    "date_time":   "Date & Time",
+    "lookup":      "Lookup & Reference",
+    "math":        "Math & Trig",
+    "more":        "More Functions...",
+    "name_manager":"Name Manager",
+    "define_name": "Define Name",
+    "trace_prec":  "Trace Precedents",
+    "show_formulas":"Show Formulas",
+    "calc_now":    "Calculate Now",
+    "calc_sheet":  "Calculate Sheet"
+  },
+
+  "data": {
+    "sort":        "Sort",
+    "filter":      "Filter",
+    "advanced_filter":"Advanced Filter",
+    "remove_dup":  "Remove Duplicates",
+    "data_val":    "Data Validation",
+    "text_to_cols":"Text to Columns",
+    "get_data":    "Get Data",
+    "refresh":     "Refresh All"
+  },
+
+  "view": {
+    "normal":      "Normal",
+    "page_layout": "Page Layout",
+    "page_break":  "Page Break Preview",
+    "freeze_panes":"Freeze Panes",
+    "freeze_row":  "Freeze Top Row",
+    "freeze_col":  "Freeze First Column",
+    "unfreeze":    "Unfreeze Panes",
+    "split":       "Split",
+    "grid_lines":  "Gridlines",
+    "formula_bar": "Formula Bar",
+    "headings":    "Headings",
+    "zoom":        "Zoom",
+    "dark_mode":   "Dark Mode",
+    "new_window":  "New Window"
+  },
+
+  "sheet": {
+    "new_sheet":   "New Sheet",
+    "rename":      "Rename",
+    "delete":      "Delete",
+    "move_copy":   "Move or Copy...",
+    "tab_color":   "Tab Color",
+    "hide":        "Hide",
+    "unhide":      "Unhide"
+  },
+
+  "cell_context": {
+    "cut":         "Cut",
+    "copy":        "Copy",
+    "paste":       "Paste",
+    "paste_special":"Paste Special...",
+    "insert":      "Insert...",
+    "delete":      "Delete...",
+    "clear":       "Clear Contents",
+    "format_cells":"Format Cells...",
+    "insert_comment":"Insert Comment",
+    "hyperlink":   "Hyperlink...",
+    "define_name": "Define Name...",
+    "filter_by_value":"Filter by Selected Cell's Value",
+    "sort_asc":    "Sort Ascending",
+    "sort_desc":   "Sort Descending"
+  },
+
+  "dialogs": {
+    "ok":          "OK",
+    "cancel":      "Cancel",
+    "apply":       "Apply",
+    "close":       "Close",
+    "yes":         "Yes",
+    "no":          "No",
+    "save_prompt": "The workbook has unsaved changes. Save before closing?",
+    "file_exists": "File already exists. Overwrite?",
+    "find_title":  "Find",
+    "replace_title":"Find & Replace",
+    "find_what":   "Find what:",
+    "replace_with":"Replace with:",
+    "match_case":  "Match case",
+    "whole_cell":  "Match entire cell contents",
+    "find_next":   "Find Next",
+    "replace":     "Replace",
+    "replace_all": "Replace All",
+    "not_found":   "No matches found."
+  },
+
+  "errors": {
+    "file_open":   "Could not open the file.",
+    "file_save":   "Could not save the file.",
+    "unsupported_format": "Unsupported file format.",
+    "formula_error":"Formula error",
+    "circular_ref":"Circular reference detected in {cell}"
+  },
+
+  "status": {
+    "ready":       "Ready",
+    "sum":         "Sum",
+    "average":     "Average",
+    "count":       "Count",
+    "editing":     "Edit",
+    "zoom":        "Zoom"
+  }
+}
