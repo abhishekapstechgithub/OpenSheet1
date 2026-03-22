@@ -1,10 +1,9 @@
-# Note: file_manager.h is header-only (no .cpp needed)
+# file_system/ headers are now header-only (csv_reader.h, xlsx_reader.h, opensheet_format.h)
+# file_manager.h is also header-only
+# Only the following modules have .cpp files:
 set(_core_src ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(os_core STATIC
-    ${_core_src}/file_system/csv_reader.cpp
-    ${_core_src}/file_system/xlsx_reader.cpp
-    ${_core_src}/file_system/opensheet_format.cpp
     ${_core_src}/settings_manager.cpp
     ${_core_src}/crash_recovery.cpp
     ${_core_src}/print_manager.cpp
