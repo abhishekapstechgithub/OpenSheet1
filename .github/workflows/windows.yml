@@ -1,0 +1,218 @@
+name: OpenSheet Windows Build
+
+on:
+  push:
+    branches: [ main, develop, "feature/**", "fix/**" ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ created ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: "Build type"
+        required: false
+        default: "Release"
+        type: choice
+        options: [ Release, Debug, RelWithDebInfo ]
+
+env:
+  QT_VERSION:  "6.6.3"
+  QT_ARCH:     "win64_msvc2019_64"
+  BUILD_TYPE:  ${{ github.event.inputs.build_type || 'Release' }}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  BUILD
+# ─────────────────────────────────────────────────────────────────────────────
+  build:
+    name: "Build · Windows · MSVC 2022"
+    runs-on: windows-2022
+    timeout-minutes: 60
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ── Install Qt6 ─────────────────────────────────────────────────────────
+      # Only list modules that are NOT bundled in qt6-base.
+      # Bundled (do NOT list): qtnetwork, qtprintsupport, qtsql, qtsvg, qtxml
+      # Optional (must list):  qtcharts
+      - name: Install Qt6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version:          ${{ env.QT_VERSION }}
+          host:             windows
+          target:           desktop
+          arch:             ${{ env.QT_ARCH }}
+          modules:          "qtcharts"
+          cache:            true
+          cache-key-prefix: qt6-win
+
+      # ── SQLite via vcpkg ─────────────────────────────────────────────────────
+      - name: Cache vcpkg packages
+        uses: actions/cache@v4
+        with:
+          path: C:/vcpkg/installed
+          key: vcpkg-sqlite3-${{ runner.os }}
+
+      - name: Install SQLite3 (vcpkg)
+        shell: powershell
+        run: |
+          vcpkg integrate install
+          vcpkg install sqlite3:x64-windows
+
+      # ── Python (optional plugin support) ────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # ── CMake cache ─────────────────────────────────────────────────────────
+      - name: Cache CMake build
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: cmake-win-${{ env.BUILD_TYPE }}-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: cmake-win-${{ env.BUILD_TYPE }}-
+
+      # ── Configure ───────────────────────────────────────────────────────────
+      # NOTE: Do NOT pass -DCMAKE_MODULE_PATH or include cmake/FindQt6.cmake
+      #       Qt6 is already on PATH via jurplel/install-qt-action.
+      #       vcpkg provides SQLite3 via CMAKE_TOOLCHAIN_FILE.
+      - name: Configure CMake
+        shell: powershell
+        run: |
+          cmake -B build `
+            -G "Visual Studio 17 2022" `
+            -A x64 `
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
+            -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows `
+            -Dofficial-sqlite3_FIND_PACKAGE_NAME=unofficial-sqlite3 `
+            -DOPENSHEET_BUILD_TESTS=ON `
+            -DOPENSHEET_PYTHON_SUPPORT=ON
+
+      # ── Build ────────────────────────────────────────────────────────────────
+      - name: Build
+        shell: powershell
+        run: |
+          cmake --build build `
+            --config ${{ env.BUILD_TYPE }} `
+            --parallel
+
+      # ── Tests ────────────────────────────────────────────────────────────────
+      - name: Run tests
+        shell: powershell
+        working-directory: build
+        run: |
+          ctest `
+            -C ${{ env.BUILD_TYPE }} `
+            --output-on-failure `
+            --timeout 120
+
+      # ── Deploy Qt DLLs ───────────────────────────────────────────────────────
+      - name: Deploy Qt runtime (windeployqt)
+        shell: powershell
+        run: |
+          $exePath = "build\bin\${{ env.BUILD_TYPE }}\opensheet.exe"
+          if (-not (Test-Path $exePath)) {
+            $exePath = "build\bin\opensheet.exe"
+          }
+          $qtBin = "$env:Qt6_DIR\bin"
+          & "$qtBin\windeployqt.exe" `
+              --$("${{ env.BUILD_TYPE }}".ToLower()) `
+              --no-translations `
+              --no-system-d3d-compiler `
+              "$exePath"
+
+      # ── Stage distribution folder ────────────────────────────────────────────
+      - name: Stage distribution
+        shell: powershell
+        run: |
+          $dist = "OpenSheet-dist"
+          New-Item -ItemType Directory -Force -Path $dist | Out-Null
+
+          # Copy exe + Qt DLLs
+          $binDir = "build\bin\${{ env.BUILD_TYPE }}"
+          if (-not (Test-Path $binDir)) { $binDir = "build\bin" }
+          Copy-Item -Recurse "$binDir\*" "$dist\" -ErrorAction SilentlyContinue
+
+          # Copy app data
+          foreach ($dir in @("themes","localization","addons","config","resources")) {
+            if (Test-Path $dir) {
+              Copy-Item -Recurse $dir "$dist\$dir"
+            }
+          }
+
+          Write-Host "Distribution contents:"
+          Get-ChildItem $dist -Recurse | Select-Object FullName
+
+      # ── Create ZIP ───────────────────────────────────────────────────────────
+      - name: Create Windows ZIP
+        shell: powershell
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $zipName = "OpenSheet-$tag-windows-x64.zip"
+          Compress-Archive -Path "OpenSheet-dist\*" -DestinationPath $zipName
+          Write-Host "Created: $zipName ($('{0:N0}' -f (Get-Item $zipName).Length) bytes)"
+
+      # ── Upload artifact (every build) ────────────────────────────────────────
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: opensheet-windows-x64-${{ github.sha }}
+          path: OpenSheet-dist\
+          retention-days: 30
+
+      # ── Upload ZIP artifact ───────────────────────────────────────────────────
+      - name: Upload ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: opensheet-windows-x64-zip
+          path: "OpenSheet-*-windows-x64.zip"
+          retention-days: 30
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  RELEASE  — attach ZIP to GitHub Release
+# ─────────────────────────────────────────────────────────────────────────────
+  release:
+    name: "Publish Release"
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'release'
+    timeout-minutes: 10
+
+    steps:
+      - name: Download ZIP artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: opensheet-windows-x64-zip
+          path: release/
+
+      - name: Generate checksum
+        run: |
+          cd release
+          sha256sum *.zip > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Attach to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/*.zip
+            release/SHA256SUMS.txt
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -18,7 +18,16 @@ find_package(Qt6 REQUIRED COMPONENTS
 )
 
 # Find SQLite3
-find_package(SQLite3 REQUIRED)
+# vcpkg provides unofficial::sqlite3::sqlite3; system cmake provides SQLite::SQLite3
+find_package(unofficial-sqlite3 CONFIG QUIET)
+if(unofficial-sqlite3_FOUND)
+    set(SQLITE3_TARGET unofficial::sqlite3::sqlite3)
+    message(STATUS "Using vcpkg SQLite3: unofficial::sqlite3::sqlite3")
+else()
+    find_package(SQLite3 REQUIRED)
+    set(SQLITE3_TARGET SQLite::SQLite3)
+    message(STATUS "Using system SQLite3: SQLite::SQLite3")
+endif()
 
 # Optional Python support for plugins
 find_package(Python3 COMPONENTS Interpreter Development QUIET)
@@ -74,7 +83,7 @@ target_link_libraries(opensheet PRIVATE
     Qt6::Sql
     Qt6::Network
     Qt6::Xml
-    SQLite::SQLite3
+    ${SQLITE3_TARGET}
 )
 
 if(Python3_FOUND)

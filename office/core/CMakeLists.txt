@@ -11,6 +11,9 @@ add_library(os_core STATIC
     theme_manager.cpp
 )
 target_link_libraries(os_core PUBLIC
-    os_engine Qt6::Core Qt6::Xml Qt6::Network SQLite::SQLite3
+target_link_libraries(os_core PUBLIC
+    os_engine Qt6::Core Qt6::Xml Qt6::Network
+    $<IF:$<TARGET_EXISTS:unofficial::sqlite3::sqlite3>,unofficial::sqlite3::sqlite3,SQLite::SQLite3>
+)
 )
 target_include_directories(os_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
