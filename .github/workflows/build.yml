@@ -63,7 +63,7 @@ jobs:
           host:             linux
           target:           desktop
           arch:             gcc_64
-          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork qtprintsupport"
+          modules:          "qtcharts"
           cache:            true
           cache-key-prefix: qt6-linux
 
@@ -159,7 +159,7 @@ jobs:
           host:             windows
           target:           desktop
           arch:             win64_msvc2019_64
-          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork qtprintsupport"
+          modules:          "qtcharts"
           cache:            true
           cache-key-prefix: qt6-windows
 
@@ -261,7 +261,7 @@ jobs:
           version:          ${{ env.QT_VERSION }}
           host:             mac
           target:           desktop
-          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork qtprintsupport"
+          modules:          "qtcharts"
           cache:            true
           cache-key-prefix: qt6-macos
 
@@ -392,7 +392,7 @@ jobs:
           version:          ${{ env.QT_VERSION }}
           host:             linux
           target:           desktop
-          modules:          "qtcharts qtsql qtsvg qtxml"
+          modules:          "qtcharts"
           cache:            true
           cache-key-prefix: qt6-coverage
 

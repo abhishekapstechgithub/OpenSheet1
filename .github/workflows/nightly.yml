@@ -68,7 +68,7 @@ jobs:
           host:             linux
           target:           desktop
           arch:             gcc_64
-          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork"
+          modules:          "qtcharts"
           cache:            true
           cache-key-prefix: qt6-nightly-linux
 
@@ -80,7 +80,7 @@ jobs:
           host:             windows
           target:           desktop
           arch:             win64_msvc2019_64
-          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork"
+          modules:          "qtcharts"
           cache:            true
           cache-key-prefix: qt6-nightly-windows
 
@@ -91,7 +91,7 @@ jobs:
           version:          ${{ env.QT_VERSION }}
           host:             mac
           target:           desktop
-          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork"
+          modules:          "qtcharts"
           cache:            true
           cache-key-prefix: qt6-nightly-macos
 

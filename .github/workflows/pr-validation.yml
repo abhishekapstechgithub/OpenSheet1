@@ -37,7 +37,7 @@ jobs:
           host:             linux
           target:           desktop
           arch:             gcc_64
-          modules:          "qtcharts qtsql qtsvg qtxml qtnetwork"
+          modules:          "qtcharts"
           cache:            true
           cache-key-prefix: qt6-pr
 
@@ -82,7 +82,7 @@ jobs:
           host:             linux
           target:           desktop
           arch:             gcc_64
-          modules:          "qtcharts qtsql qtsvg qtxml"
+          modules:          "qtcharts"
           cache:            true
           cache-key-prefix: qt6-pr-tests
 
