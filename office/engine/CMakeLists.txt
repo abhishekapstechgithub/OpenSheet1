@@ -15,5 +15,12 @@ add_library(os_engine STATIC
     ${_eng}/data_validation.cpp
 )
 
-target_link_libraries(os_engine PUBLIC Qt6::Core)
+# Qt6::Gui  provides QColor, QFont
+# Qt6::Widgets provides QUndoStack, QUndoCommand (used in undo_commands.h)
+target_link_libraries(os_engine PUBLIC
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+)
+
 target_include_directories(os_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
