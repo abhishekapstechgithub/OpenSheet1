@@ -2,6 +2,8 @@
 #include "dependency_graph.h"
 #include <QObject>
 #include <QSet>
+#include <unordered_set>
+#include <string>
 
 namespace OpenSheet {
 
@@ -9,36 +11,22 @@ class Workbook;
 class Sheet;
 class FormulaParser;
 
-/**
- * RecalcEngine drives the recalculation of all formula cells
- * in the correct topological order, using the DependencyGraph
- * to resolve dependencies and detect circular references.
- *
- * Supports:
- *  - Full recalc (all sheets)
- *  - Partial recalc (single sheet or dirty set)
- *  - Circular reference reporting
- *  - Multi-pass iterative calculation (for convergence)
- */
 class RecalcEngine : public QObject {
     Q_OBJECT
 public:
-    explicit RecalcEngine(Workbook *wb, QObject *parent = nullptr);
-
-    // Recalculate everything
-    void recalcAll();
+    explicit RecalcEngine(QObject *parent = nullptr) : QObject(parent) {}
 
     // Recalculate a single sheet
-    void recalcSheet(Sheet *sheet, int sheetIdx);
+    void recalcSheet(Sheet *sheet, Workbook *wb);
 
-    // Mark a cell as dirty and recalculate affected cells
-    void markDirty(int sheetIdx, int row, int col);
+    // Incremental: recalculate cells that depend on (row,col)
+    void recalcDependents(Sheet *sheet, Workbook *wb, int row, int col);
 
-    // Rebuild the entire dependency graph from scratch
-    void rebuildGraph();
+    // Rebuild the dependency graph for a sheet
+    void rebuildGraph(Sheet *sheet, Workbook *wb);
 
     // Returns cells currently flagged as circular
-    QVector<CellKey> circularRefs() const;
+    QVector<CellKey> circularRefs() const { return m_graph.findCircularRefs(); }
 
 signals:
     void recalcStarted();
@@ -46,18 +34,12 @@ signals:
     void circularRefDetected(int sheetIdx, int row, int col);
 
 private:
-    void   extractDependencies(int sheetIdx, int row, int col,
-                                const QString &formula);
-    void   evalCell(int sheetIdx, int row, int col);
-    void   reportCircular(const QVector<CellKey> &cycle);
+    void evaluateCell(Sheet *sheet, Workbook *wb, int row, int col);
+    void parseAndRegisterDependencies(Sheet *sheet, Workbook *wb,
+                                       int row, int col,
+                                       const QString &formula);
 
-    Workbook        *m_workbook;
-    DependencyGraph  m_graph;
-    FormulaParser   *m_parser;
-    QSet<CellKey>    m_dirtySet;
-    bool             m_iterativeCalc  = false;
-    int              m_maxIterations  = 100;
-    double           m_convergenceTol = 0.001;
+    DependencyGraph m_graph;
 };
 
 } // namespace OpenSheet

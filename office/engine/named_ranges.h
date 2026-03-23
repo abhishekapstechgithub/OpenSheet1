@@ -1,38 +1,46 @@
 #pragma once
 #include "cell_range.h"
 #include <QString>
+#include <QStringList>
 #include <QHash>
+#include <QJsonArray>
+#include <QJsonObject>
 
 namespace OpenSheet {
 
 class Sheet;
 
+// Used by Workbook for its public API
 struct NamedRange {
-    QString    name;
-    Sheet     *sheet = nullptr;
-    CellRange  range;
-    QString    comment;
-    bool       readOnly = false;
+    QString   name;
+    Sheet    *sheet = nullptr;
+    CellRange range;
+    QString   comment;
 };
 
-class NamedRangeManager {
+// Internal registry used by NamedRanges class (matches named_ranges.cpp)
+class NamedRanges {
 public:
-    NamedRangeManager() = default;
+    NamedRanges() = default;
 
-    void   define(const QString &name, Sheet *sheet, const CellRange &range,
-                  const QString &comment = {});
-    void   remove(const QString &name);
-    bool   resolve(const QString &name, Sheet *&outSheet, CellRange &outRange) const;
-    bool   exists(const QString &name) const;
+    void define(const QString &name, int sheetIndex, const CellRange &range);
+    void remove(const QString &name);
+    bool resolve(const QString &name, int &outSheetIndex, CellRange &outRange) const;
+    bool exists(const QString &name) const {
+        return m_ranges.contains(name.toUpper());
+    }
 
-    QVector<NamedRange> allRanges() const;
-    void                clear();
-
-    // Validate: name must start with letter, no spaces, not a cell address
-    static bool isValidName(const QString &name);
+    QStringList names() const;
+    QJsonArray  toJson() const;
+    void        fromJson(const QJsonArray &arr);
+    void        clear() { m_ranges.clear(); }
 
 private:
-    QHash<QString, NamedRange> m_ranges;
+    struct Entry {
+        int       sheetIndex = 0;
+        CellRange range;
+    };
+    QHash<QString, Entry> m_ranges;
 };
 
 } // namespace OpenSheet

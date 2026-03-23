@@ -56,6 +56,7 @@ signals:
     void sheetRenamed(int index, const QString &name);
     void activeSheetChanged(int index);
     void modifiedChanged(bool modified);
+    void structureChanged();
     void recalcComplete();
 
 private slots:
