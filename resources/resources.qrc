@@ -7,33 +7,10 @@
   </qresource>
 
   <qresource prefix="/resources">
-    <!-- Icons (SVG preferred for HiDPI) -->
-    <file alias="icons/new.svg">icons/new.svg</file>
-    <file alias="icons/open.svg">icons/open.svg</file>
-    <file alias="icons/save.svg">icons/save.svg</file>
-    <file alias="icons/undo.svg">icons/undo.svg</file>
-    <file alias="icons/redo.svg">icons/redo.svg</file>
-    <file alias="icons/cut.svg">icons/cut.svg</file>
-    <file alias="icons/copy.svg">icons/copy.svg</file>
-    <file alias="icons/paste.svg">icons/paste.svg</file>
-    <file alias="icons/bold.svg">icons/bold.svg</file>
-    <file alias="icons/italic.svg">icons/italic.svg</file>
-    <file alias="icons/underline.svg">icons/underline.svg</file>
-    <file alias="icons/align_left.svg">icons/align_left.svg</file>
-    <file alias="icons/align_center.svg">icons/align_center.svg</file>
-    <file alias="icons/align_right.svg">icons/align_right.svg</file>
-    <file alias="icons/chart_bar.svg">icons/chart_bar.svg</file>
-    <file alias="icons/chart_line.svg">icons/chart_line.svg</file>
-    <file alias="icons/chart_pie.svg">icons/chart_pie.svg</file>
-    <file alias="icons/sort_az.svg">icons/sort_az.svg</file>
-    <file alias="icons/sort_za.svg">icons/sort_za.svg</file>
-    <file alias="icons/filter.svg">icons/filter.svg</file>
-    <file alias="icons/sum.svg">icons/sum.svg</file>
-    <file alias="icons/insert_row.svg">icons/insert_row.svg</file>
-    <file alias="icons/delete_row.svg">icons/delete_row.svg</file>
-    <file alias="icons/freeze.svg">icons/freeze.svg</file>
+    <!-- App icon (vector, HiDPI-ready) -->
     <file alias="icons/logo.svg">icons/logo.svg</file>
-    <file alias="icons/splash.png">icons/splash.png</file>
+    <!-- Toolbar sprite sheet (all toolbar icons in one file) -->
+    <file alias="icons/toolbar_icons.svg">icons/toolbar_icons.svg</file>
   </qresource>
 
   <qresource prefix="/localization">
