@@ -14,7 +14,7 @@ class FormulaParser;
 class RecalcEngine : public QObject {
     Q_OBJECT
 public:
-    explicit RecalcEngine(QObject *parent = nullptr) : QObject(parent) {}
+    explicit RecalcEngine(QObject *parent = nullptr);
 
     // Recalculate a single sheet
     void recalcSheet(Sheet *sheet, Workbook *wb);
