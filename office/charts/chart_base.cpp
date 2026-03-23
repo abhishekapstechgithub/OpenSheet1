@@ -3,7 +3,7 @@
 #include "../engine/cell_range.h"
 #include <QPainter>
 #include <QPainterPath>
-#include <QSvgGenerator>
+
 #include <QImageWriter>
 #include <cmath>
 

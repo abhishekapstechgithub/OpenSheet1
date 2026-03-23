@@ -1,4 +1,5 @@
 #pragma once
+#include "../engine/cell_range.h"
 #include <QWidget>
 #include <QVector>
 #include <QString>
@@ -9,7 +10,6 @@
 namespace OpenSheet {
 
 class Sheet;
-struct CellRange;
 
 enum class ChartType { Bar, Line, Pie, Scatter, Area, Column, Donut };
 enum class LegendPos { Top, Bottom, Left, Right, None };
@@ -65,7 +65,7 @@ public:
     // Export
     QImage      toImage(int width = 800, int height = 500) const;
     bool        exportPng(const QString &path, int w = 800, int h = 500) const;
-    bool        exportSvg(const QString &path, int w = 800, int h = 500) const;
+    bool exportSvg(const QString &, int = 800, int = 500) const { return false; } // SVG requires Qt6::Svg
 
 signals:
     void configChanged();

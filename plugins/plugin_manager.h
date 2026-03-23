@@ -25,7 +25,12 @@ public:
     virtual void shutdown() = 0;
 };
 
+} // namespace OpenSheet
+
+// Q_DECLARE_INTERFACE must be at global scope (not inside a namespace)
 Q_DECLARE_INTERFACE(OpenSheet::IPlugin, "io.opensheet.IPlugin/1.0")
+
+namespace OpenSheet {
 
 struct PluginInfo {
     QString  path;
