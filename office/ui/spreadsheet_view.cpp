@@ -3,6 +3,7 @@
 #include "../engine/sheet.h"
 #include "../engine/cell.h"
 #include "../engine/cell_range.h"
+#include "../engine/formula_parser.h"
 
 #include <QPainter>
 #include <QPainterPath>

@@ -88,6 +88,7 @@ protected:
     double seriesMax() const;
     double seriesMin() const;
 
+public:
     static QColor defaultColor(int index);
 
     ChartConfig m_config;

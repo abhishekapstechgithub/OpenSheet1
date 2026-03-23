@@ -1,4 +1,5 @@
 #pragma once
+#include <QLabel>
 #include <QWidget>
 
 namespace OpenSheet {
@@ -19,10 +20,10 @@ private:
     void buildQuickActionsSection();
 
     Workbook *m_workbook = nullptr;
-    class QLabel *m_refLabel   = nullptr;
-    class QLabel *m_typeLabel  = nullptr;
-    class QLabel *m_valueLabel = nullptr;
-    class QLabel *m_formulaLabel = nullptr;
+    QLabel *m_refLabel   = nullptr;
+    QLabel *m_typeLabel  = nullptr;
+    QLabel *m_valueLabel = nullptr;
+    QLabel *m_formulaLabel = nullptr;
 };
 
 } // namespace OpenSheet

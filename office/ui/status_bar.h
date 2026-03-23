@@ -1,4 +1,6 @@
 #pragma once
+#include <QLabel>
+#include <QSlider>
 #include <QStatusBar>
 
 namespace OpenSheet {
@@ -14,12 +16,12 @@ public:
     void setZoom(int pct);
 
 private:
-    class QLabel *m_cellLabel  = nullptr;
-    class QLabel *m_sumLabel   = nullptr;
-    class QLabel *m_avgLabel   = nullptr;
-    class QLabel *m_countLabel = nullptr;
-    class QLabel *m_modeLabel  = nullptr;
-    class QSlider *m_zoom      = nullptr;
+    QLabel *m_cellLabel  = nullptr;
+    QLabel *m_sumLabel   = nullptr;
+    QLabel *m_avgLabel   = nullptr;
+    QLabel *m_countLabel = nullptr;
+    QLabel *m_modeLabel  = nullptr;
+    QSlider *m_zoom      = nullptr;
 };
 
 } // namespace OpenSheet

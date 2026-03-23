@@ -30,6 +30,7 @@
 #include <QApplication>
 #include <QScreen>
 #include <QStatusBar>
+#include <QToolBar>
 
 using namespace OpenSheet;
 

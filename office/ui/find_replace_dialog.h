@@ -51,7 +51,7 @@ private:
     QCheckBox   *m_useRegex      = nullptr;
     QCheckBox   *m_allSheets     = nullptr;
     QLabel      *m_statusLabel   = nullptr;
-    QPushButton *m_replaceRow    = nullptr; // row with Replace + ReplaceAll
+    QWidget     *m_replaceRow    = nullptr; // row with Replace + ReplaceAll
 };
 
 } // namespace OpenSheet

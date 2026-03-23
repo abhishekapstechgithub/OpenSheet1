@@ -1,4 +1,5 @@
 #pragma once
+#include <QLineEdit>
 #include <QAbstractScrollArea>
 #include <QPoint>
 #include <QRect>
@@ -87,6 +88,11 @@ private:
     QRect   cellRect(int row, int col) const;
     bool    cellAtPoint(const QPoint &pt, int &row, int &col) const;
     QPoint  scrollOffset() const;
+    int     rowHeight(int row) const;
+    int     colWidth(int col) const;
+    int     cellX(int col) const;
+    int     cellY(int row) const;
+    void    ensureCellVisible(int row, int col);
 
     // Inline editor
     void startInlineEdit(int row, int col);
@@ -111,7 +117,7 @@ private:
     bool m_dragging = false;
 
     // Inline editor
-    class QLineEdit *m_editor = nullptr;
+    QLineEdit *m_editor = nullptr;
     int  m_editRow=0, m_editCol=0;
     bool m_editing = false;
 
