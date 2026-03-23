@@ -3,9 +3,9 @@
 #include <QTimer>
 #include <QDir>
 #include <QStandardPaths>
-#include "ui/main_window.h"
-#include "core/settings_manager.h"
-#include "core/crash_recovery.h"
+#include "office/ui/main_window.h"
+#include "office/core/settings_manager.h"
+#include "office/core/crash_recovery.h"
 #include "plugins/plugin_manager.h"
 
 int main(int argc, char *argv[])
