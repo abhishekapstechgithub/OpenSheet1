@@ -61,6 +61,7 @@ add_subdirectory(office/ui)
 add_subdirectory(office/charts)
 add_subdirectory(office/formulas)
 add_subdirectory(plugins)
+include(CTest)
 add_subdirectory(tests)
 
 # Main executable

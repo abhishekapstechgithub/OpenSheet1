@@ -113,8 +113,14 @@ jobs:
       - name: Deploy Qt runtime
         shell: powershell
         run: |
-          $exePath = "build\bin\${{ env.BUILD_TYPE }}\opensheet.exe"
-          if (-not (Test-Path $exePath)) { $exePath = "build\bin\opensheet.exe" }
+          # exe is placed in bin/<config>/ relative to source root (CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+          $exePath = "bin\${{ env.BUILD_TYPE }}\opensheet.exe"
+          if (-not (Test-Path $exePath)) { $exePath = "bin\opensheet.exe" }
+          if (-not (Test-Path $exePath)) {
+            Write-Error "Cannot find opensheet.exe - searched bin\Release\ and bin\"
+            exit 1
+          }
+          Write-Host "Deploying: $exePath"
           & "$env:Qt6_DIR\bin\windeployqt.exe" `
               --$("${{ env.BUILD_TYPE }}".ToLower()) `
               --no-translations `
@@ -126,8 +132,9 @@ jobs:
         run: |
           $dist = "OpenSheet-dist"
           New-Item -ItemType Directory -Force -Path $dist | Out-Null
-          $binDir = "build\bin\${{ env.BUILD_TYPE }}"
-          if (-not (Test-Path $binDir)) { $binDir = "build\bin" }
+          # CMAKE_RUNTIME_OUTPUT_DIRECTORY is set to ${CMAKE_SOURCE_DIR}/bin
+          $binDir = "bin\${{ env.BUILD_TYPE }}"
+          if (-not (Test-Path $binDir)) { $binDir = "bin" }
           Copy-Item -Recurse "$binDir\*" "$dist\" -ErrorAction SilentlyContinue
           foreach ($dir in @("themes","localization","addons","config","resources")) {
             if (Test-Path $dir) { Copy-Item -Recurse $dir "$dist\$dir" }
