@@ -336,6 +336,45 @@ QVariant FormulaParser::parseFunction(const QString &name, ParseContext &ctx)
         m_tokens[m_pos].type == Token::Type::LeftParen)
         ++m_pos;
 
+    // IFERROR(value, value_if_error): the first argument must be evaluated
+    // inside a try/catch because it may throw before we can handle the error.
+    if (name == "IFERROR") {
+        QVariant firstArg;
+        bool hadError = false;
+        try {
+            firstArg = parseExpr(ctx);
+        } catch (CellError e) {
+            firstArg = Cell::errorString(e);
+            hadError = true;
+        } catch (...) {
+            firstArg = Cell::errorString(CellError::Value);
+            hadError = true;
+        }
+        // Skip comma
+        if (m_pos < m_tokens.size() && m_tokens[m_pos].type == Token::Type::Comma)
+            ++m_pos;
+        // Parse the fallback value
+        QVariant fallback;
+        try { fallback = parseExpr(ctx); } catch (...) { fallback = QVariant(); }
+        // Consume ')'
+        if (m_pos < m_tokens.size() && m_tokens[m_pos].type == Token::Type::RightParen)
+            ++m_pos;
+        if (hadError || firstArg.toString().startsWith('#'))
+            return fallback;
+        return firstArg;
+    }
+
+    // ISNUMBER, ISTEXT, ISBLANK, ISERROR - also need safe first-arg eval
+    if (name == "ISERROR" || name == "ISERR") {
+        QVariant firstArg;
+        bool hadError = false;
+        try { firstArg = parseExpr(ctx); } catch (CellError) { hadError = true; }
+        catch (...) { hadError = true; }
+        if (m_pos < m_tokens.size() && m_tokens[m_pos].type == Token::Type::RightParen)
+            ++m_pos;
+        return hadError || firstArg.toString().startsWith('#');
+    }
+
     QVector<QVariant> args = parseArgList(ctx);
 
     // Consume ')'

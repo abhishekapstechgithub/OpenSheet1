@@ -15,7 +15,7 @@ private:
 
 private slots:
     void initTestCase() {
-        m_wb     = new Workbook(this);
+        m_wb     = new Workbook();   // no parent - we own it manually
         m_sheet  = m_wb->addSheet("TestSheet");
         m_parser = new FormulaParser(m_wb);
 
