@@ -8,6 +8,8 @@
 #include "office/core/crash_recovery.h"
 #include "plugins/plugin_manager.h"
 
+using namespace OpenSheet;
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
